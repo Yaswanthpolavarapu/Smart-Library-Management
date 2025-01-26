@@ -1,0 +1,33 @@
+import serial
+from serial import Serial
+import mysql.connector
+
+# Connect to MySQL database
+db = mysql.connector.connect(
+    host='localhost',
+    user='root',
+    password='123456',
+    database='library'
+)
+mycus = db.cursor()
+
+# Initialize serial connection
+se = serial.Serial('COM5', 9600)
+line_count = 0
+
+while True:
+    if se.in_waiting:
+        data = se.readline().decode('utf-8').rstrip('\n')
+        line_count += 1
+
+        if line_count == 2:
+            parts = data.split(",")
+            x = parts[0]
+            y = parts[1]
+            z = parts[2]
+            sql = "INSERT INTO b_details (b_id, b_name, b_author) VALUES (%s, %s, %s)"
+            val = (x, y, z)
+            mycus.execute(sql, val)
+
+            db.commit()
+            print("Record inserted")
